@@ -206,8 +206,5 @@ def deletar_cliente(id):
     
     return jsonify({'mensagem':'Cliente deletado com sucesso'})
     
-    
-    return jsonify({'erro': 'Cliente não encontrado'}), 404
-
 if __name__ == '__main__':
     app.run(debug=True)
