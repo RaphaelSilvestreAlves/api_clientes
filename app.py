@@ -41,7 +41,15 @@ def home():
 
 @app.route('/clientes', methods=['GET'])
 def listar_clientes():
-    return jsonify(clientes)
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+    
+    cursor.execute('SELECT * FROM clientes')
+    clientes = cursor.fetchall()
+    
+    conexao.close()
+    
+    return jsonify([dict(cliente) for cliente in clientes])
 
 @app.route('/clientes', methods=['POST'])
 def criar_cliente():
@@ -51,13 +59,26 @@ def criar_cliente():
     if erro:
         return jsonify({'erro': erro}), 400
     
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+    
+    cursor.execute(
+        'INSERT INTO clientes (nome, email) VALUES (?, ?)',
+        (dados['nome'].strip(), dados['email'].strip().lower())
+        )
+    
+    conexao.commit()
+    
+    id_cliente = cursor.lastrowid
+    conexao.close()
+    
+    
     novo_cliente =  {
-        'id': len(clientes) + 1,
+        'id': id_cliente,
         'nome': dados['nome'].strip(),
         'email': dados['email'].strip().lower()
     }
     
-    clientes.append(novo_cliente)
     return jsonify(novo_cliente), 201
 
 @app.route('/clientes/<int:id>', methods=['GET'])
