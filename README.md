@@ -53,7 +53,3 @@ Cada cliente possui os seguintes campos:
 git clone <URL_DO_REPOSITORIO>
 cd <NOME_DA_PASTA>
 ```
-
-```
-
-```
