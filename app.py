@@ -1,8 +1,29 @@
+import sqlite3
 from flask import Flask, jsonify, request
+
+def conectar_banco():
+    conexao = sqlite3.connect('clientes.db')
+    conexao.row_factory = sqlite3.Row
+    return conexao
+
+def criar_tabela():
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS clientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL
+        )
+ ''')
+    
+    conexao.commit()
+    conexao.close()
 
 app = Flask(__name__)
 
-clientes = []
+criar_tabela()
 
 def validar_dados_cliente(dados):
     if not dados:
