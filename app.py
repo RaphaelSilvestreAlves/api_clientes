@@ -1,5 +1,8 @@
 import sqlite3
+import requests
 from flask import Flask, jsonify, request
+
+app = Flask(__name__)
 
 def conectar_banco():
     conexao = sqlite3.connect('clientes.db')
@@ -14,14 +17,13 @@ def criar_tabela():
         CREATE TABLE IF NOT EXISTS clientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
-            email TEXT NOT NULL
+            email TEXT NOT NULL,
+            telefone TEXT
         )
  ''')
     
     conexao.commit()
     conexao.close()
-
-app = Flask(__name__)
 
 criar_tabela()
 
@@ -35,9 +37,26 @@ def validar_dados_cliente(dados):
 
     return None
 
+def buscar_usuarios_api_externa():
+    url = 'https://jsonplaceholder.typicode.com/users'
+    resposta = requests.get(url, timeout = 10)
+    resposta.raise_for_status()
+    return resposta.json()
+
+def transformar_usuario_em_cliente(usuario):
+    return {
+        'nome': usuario['name'].strip(),
+        'email': usuario['email'].strip().lower(),
+        'telefone': usuario.get('phone', '').strip()
+    }
+
 @app.route('/')
 def home():
     return 'API FUNCIONANDO!'
+
+
+
+
 
 @app.route('/clientes', methods=['GET'])
 def listar_clientes():
@@ -59,27 +78,59 @@ def criar_cliente():
     if erro:
         return jsonify({'erro': erro}), 400
     
+    nome = dados['nome'].strip()
+    email = dados['email'].strip().lower()
+    telofone = dados.get('telefone', '').strip()
+    
     conexao = conectar_banco()
     cursor = conexao.cursor()
     
     cursor.execute(
-        'INSERT INTO clientes (nome, email) VALUES (?, ?)',
-        (dados['nome'].strip(), dados['email'].strip().lower())
+        'INSERT INTO clientes (nome, email, telefone) VALUES (?, ?, ?)',
+        (nome, email, telofone)
         )
     
     conexao.commit()
-    
     id_cliente = cursor.lastrowid
     conexao.close()
     
     
     novo_cliente =  {
         'id': id_cliente,
-        'nome': dados['nome'].strip(),
-        'email': dados['email'].strip().lower()
+        'nome': nome,
+        'email': email,
+        'telefone': telofone
     }
     
     return jsonify(novo_cliente), 201
+
+@app.route('/importar-clientes', methods=['POST'])
+def importar_clientes():
+    try:
+        usuarios_externos = buscar_usuarios_api_externa()
+        
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        
+        clientes_importados = []
+        
+        for usuario in usuarios_externos:
+            cliente = transformar_usuario_em_cliente(usuario)
+            
+            cursor.execute(
+                'INSERT INTO clientes (nome, email, telefone) VALUES (?, ?, ?)',
+                (cliente['nome'], cliente['email'], cliente['telefone'])
+            )
+            
+            cliente['id'] = cursor.lastrowid
+            clientes_importados.append(cliente)
+            
+        conexao.commit()
+        conexao.close()
+        
+        return jsonify(clientes_importados), 201
+    except requests.RequestException:
+        return jsonify({'erro': 'Erro ao consumir a API externa'}), 502
 
 @app.route('/clientes/<int:id>', methods=['GET'])
 def buscar_cliente(id):
@@ -104,6 +155,10 @@ def atualizar_cliente(id):
     if erro:
         return jsonify({'erro': erro}), 400
     
+    nome = dados['nome'].strip()
+    email = dados['email'].strip().lower()
+    telofone = dados.get('telefone', '').strip()
+    
     conexao = conectar_banco()
     cursor = conexao.cursor()
     
@@ -115,8 +170,8 @@ def atualizar_cliente(id):
         return jsonify({'erro': 'Cliente não encontrado'}), 404
     
     cursor.execute(
-        'UPDATE clientes SET nome = ?, email = ? WHERE id = ?',
-        (dados['nome'].strip(), dados['email'].strip().lower(), id)
+        'UPDATE clientes SET nome = ?, email = ?, telefone = ? WHERE id = ?',
+        (nome, email, telofone, id)
     )
     
     conexao.commit()
@@ -124,8 +179,9 @@ def atualizar_cliente(id):
     
     cliente_atualizado = {
         'id': id,
-        'nome': dados['nome'].strip(),
-        'email': dados['email'].strip().lower()
+        'nome': nome,
+        'email': email,
+        'telefone': telofone
     }
       
             
