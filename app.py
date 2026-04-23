@@ -83,9 +83,16 @@ def criar_cliente():
 
 @app.route('/clientes/<int:id>', methods=['GET'])
 def buscar_cliente(id):
-    for cliente in clientes:
-        if cliente['id'] == id:
-            return jsonify(cliente)
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+    
+    cursor.execute('SELECT * FROM clientes WHERE id = ?', (id,))
+    cliente = cursor.fetchone()
+    
+    conexao.close()
+    
+    if cliente:
+        return jsonify(dict(cliente))
         
     return jsonify({'erro': 'Cliente não encontrado'}), 404
 
@@ -97,21 +104,52 @@ def atualizar_cliente(id):
     if erro:
         return jsonify({'erro': erro}), 400
     
-    for cliente in clientes:
-        if cliente['id'] == id:
-            cliente['nome'] = dados['nome'].strip()
-            cliente['email'] = dados['email'].strip().lower()
-            return jsonify(cliente)    
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+    
+    cursor.execute('SELECT * FROM clientes WHERE id = ?', (id,))
+    cliente = cursor.fetchone()
+
+    if not cliente:
+        conexao.close()
+        return jsonify({'erro': 'Cliente não encontrado'}), 404
+    
+    cursor.execute(
+        'UPDATE clientes SET nome = ?, email = ? WHERE id = ?',
+        (dados['nome'].strip(), dados['email'].strip().lower(), id)
+    )
+    
+    conexao.commit()
+    conexao.close()
+    
+    cliente_atualizado = {
+        'id': id,
+        'nome': dados['nome'].strip(),
+        'email': dados['email'].strip().lower()
+    }
+      
             
-    return jsonify({'erro': 'Cliente não encontrado'}), 404
+    return jsonify(cliente_atualizado)
         
 
 @app.route('/clientes/<int:id>', methods=['DELETE'])
 def deletar_cliente(id):
-    for cliente in clientes:
-        if cliente['id'] == id:
-            clientes.remove(cliente)
-            return jsonify({'mensagem':'Cliente deletado com sucesso'})
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+    
+    cursor.execute('SELECT * FROM clientes WHERE id = ?', (id,))
+    cliente = cursor.fetchone()
+    
+    if not cliente:
+        conexao.close()
+        return jsonify({'erro':'Cliente não encontrado'}), 404
+    
+    cursor.execute('DELETE FROM clientes WHERE id =?', (id,))
+    conexao.commit()
+    conexao.close()
+    
+    return jsonify({'mensagem':'Cliente deletado com sucesso'})
+    
     
     return jsonify({'erro': 'Cliente não encontrado'}), 404
 
