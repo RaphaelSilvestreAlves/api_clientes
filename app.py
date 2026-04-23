@@ -80,14 +80,14 @@ def criar_cliente():
     
     nome = dados['nome'].strip()
     email = dados['email'].strip().lower()
-    telofone = dados.get('telefone', '').strip()
+    telefone = dados.get('telefone', '').strip()
     
     conexao = conectar_banco()
     cursor = conexao.cursor()
     
     cursor.execute(
         'INSERT INTO clientes (nome, email, telefone) VALUES (?, ?, ?)',
-        (nome, email, telofone)
+        (nome, email, telefone)
         )
     
     conexao.commit()
@@ -99,7 +99,7 @@ def criar_cliente():
         'id': id_cliente,
         'nome': nome,
         'email': email,
-        'telefone': telofone
+        'telefone': telefone
     }
     
     return jsonify(novo_cliente), 201
@@ -157,7 +157,7 @@ def atualizar_cliente(id):
     
     nome = dados['nome'].strip()
     email = dados['email'].strip().lower()
-    telofone = dados.get('telefone', '').strip()
+    telefone = dados.get('telefone', '').strip()
     
     conexao = conectar_banco()
     cursor = conexao.cursor()
@@ -171,7 +171,7 @@ def atualizar_cliente(id):
     
     cursor.execute(
         'UPDATE clientes SET nome = ?, email = ?, telefone = ? WHERE id = ?',
-        (nome, email, telofone, id)
+        (nome, email, telefone, id)
     )
     
     conexao.commit()
@@ -181,7 +181,7 @@ def atualizar_cliente(id):
         'id': id,
         'nome': nome,
         'email': email,
-        'telefone': telofone
+        'telefone': telefone
     }
       
             
