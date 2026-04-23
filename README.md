@@ -1,11 +1,10 @@
-````md id="3mfyfu"
 <h1 align="center">API REST de Clientes com Flask e SQLite</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" />
-  <img src="https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white" />
-  <img src="https://img.shields.io/badge/Requests-2A2A2A?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white">
+  <img src="https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white">
+  <img src="https://img.shields.io/badge/Requests-2A2A2A?style=for-the-badge&logo=python&logoColor=white">
 </p>
 
 Projeto desenvolvido em Python com Flask para praticar a criação de uma API REST completa com persistência em SQLite.
@@ -54,4 +53,7 @@ Cada cliente possui os seguintes campos:
 git clone <URL_DO_REPOSITORIO>
 cd <NOME_DA_PASTA>
 ```
-````
+
+```
+
+```
